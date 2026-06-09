@@ -5,6 +5,9 @@ import "../global.css";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
+if(!publishableKey){
+  throw new Error("Add you clerk publishable key to the project in the env file .")
+}
 export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
@@ -12,3 +15,4 @@ export default function RootLayout() {
     </ClerkProvider>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useAuth, useSignUp } from "@clerk/expo";
+import { useSignIn } from "@clerk/expo";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -11,39 +11,53 @@ import {
   View,
 } from "react-native";
 
-export default function SignUpScreen() {
-  const { signUp, errors, fetchStatus } = useSignUp();
-  const { isSignedIn } = useAuth();
+export default function SignInScreen() {
+  const { signIn, errors, fetchStatus } = useSignIn();
   const router = useRouter();
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
 
-  const onSignUpPress = async () => {
-    const { error } = await signUp.password({
+  const onSignInPress = async () => {
+    const { error } = await signIn.password({
       emailAddress: email,
       password,
-      firstName,
-      lastName,
     });
     if (error) {
-      console.error(JSON.stringify(error, null, 2));
       return;
     }
 
-    if (!error) await signUp.verifications.sendEmailCode();
+    if (signIn.status === "complete") {
+      await signIn.finalize({
+        navigate: ({ session, decorateUrl }) => {
+          if (session?.currentTask) {
+            console.log(session?.currentTask);
+            return;
+          }
+          const url = decorateUrl("/");
+          router.replace(url as any);
+        },
+      });
+    } else if (signIn.status === "needs_second_factor") {
+      await signIn.mfa.sendPhoneCode();
+    } else if (signIn.status === "needs_client_trust") {
+      const emailCodeFactor = signIn.supportedSecondFactors.find(
+        (factor) => factor.strategy === "email_code"
+      );
+      if (emailCodeFactor) {
+        await signIn.mfa.sendEmailCode();
+      }
+    } else {
+      console.error("Sign-in attempt not complete:", signIn);
+    }
   };
 
   const onVerifyPress = async () => {
-    await signUp.verifications.verifyEmailCode({
-      code,
-    });
+    await signIn.mfa.verifyEmailCode({ code });
 
-    if (signUp.status === "complete") {
-      await signUp.finalize({
+    if (signIn.status === "complete") {
+      await signIn.finalize({
         navigate: ({ session, decorateUrl }) => {
           if (session?.currentTask) {
             console.log(session?.currentTask);
@@ -54,22 +68,13 @@ export default function SignUpScreen() {
         },
       });
     } else {
-      console.error("Sign-up attempt not complete:", signUp);
+      console.error("Sign-in attempt not complete:", signIn);
     }
   };
 
   const isLoading = fetchStatus === "fetching";
 
-  if (signUp.status === "complete" || isSignedIn) {
-    return null;
-  }
-
-  // OTP verification screen
-  if (
-    signUp.status === "missing_requirements" &&
-    signUp.unverifiedFields.includes("email_address") &&
-    signUp.missingFields.length === 0
-  ) {
+  if (signIn.status === "needs_client_trust") {
     return (
       <View className="flex-1 justify-center items-center bg-white px-6">
         <Image
@@ -79,9 +84,6 @@ export default function SignUpScreen() {
         />
         <Text className="text-2xl font-bold text-gray-800 mb-2">
           Verify your account
-        </Text>
-        <Text className="text-gray-500 mb-8 text-center">
-          We sent a code to {email}
         </Text>
 
         <TextInput
@@ -111,20 +113,19 @@ export default function SignUpScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => signUp.verifications.sendEmailCode()}
-          className="py-2"
+          onPress={() => signIn.mfa.sendEmailCode()}
+          className="py-2 mb-2"
         >
           <Text className="text-blue-600">I need a new code</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => signUp.reset()} className="py-2">
+        <TouchableOpacity onPress={() => signIn.reset()} className="py-2">
           <Text className="text-blue-600">Start over</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // Sign up form
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1 }}
@@ -138,28 +139,9 @@ export default function SignUpScreen() {
           resizeMode="contain"
         />
         <Text className="text-3xl font-bold text-gray-800 mb-2">
-          Create account
+          Welcome back
         </Text>
-        <Text className="text-gray-500 mb-8">Find your dream home today</Text>
-
-        <View className="flex-row gap-3 mb-4">
-          <TextInput
-            className="flex-1 border border-gray-300 rounded-xl px-4 py-3"
-            placeholder="First name"
-            placeholderTextColor="#9CA3AF"
-            value={firstName}
-            onChangeText={setFirstName}
-            autoCapitalize="words"
-          />
-          <TextInput
-            className="flex-1 border border-gray-300 rounded-xl px-4 py-3"
-            placeholder="Last name"
-            placeholderTextColor="#9CA3AF"
-            value={lastName}
-            onChangeText={setLastName}
-            autoCapitalize="words"
-          />
-        </View>
+        <Text className="text-gray-500 mb-8">Sign in to your account</Text>
 
         <TextInput
           className="w-full border border-gray-300 rounded-xl px-4 py-3 mb-4"
@@ -170,9 +152,9 @@ export default function SignUpScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        {errors.fields.emailAddress && (
+        {errors.fields.identifier && (
           <Text className="text-red-500 mb-4">
-            {errors.fields.emailAddress.message}
+            {errors.fields.identifier.message}
           </Text>
         )}
 
@@ -191,25 +173,23 @@ export default function SignUpScreen() {
         )}
 
         <TouchableOpacity
-          onPress={onSignUpPress}
+          onPress={onSignInPress}
           disabled={isLoading}
           className="w-full bg-blue-600 py-4 rounded-xl items-center mb-4"
         >
           {isLoading ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white font-bold text-base">Sign Up</Text>
+            <Text className="text-white font-bold text-base">Sign In</Text>
           )}
         </TouchableOpacity>
 
         <View className="flex-row justify-center">
-          <Text className="text-gray-500">Already have an account? </Text>
-          <Link href="/sign-in">
-            <Text className="text-blue-600 font-semibold">Sign In</Text>
+          <Text className="text-gray-500">Don&apos;t have an account? </Text>
+          <Link href="/sign-up">
+            <Text className="text-blue-600 font-semibold">Sign Up</Text>
           </Link>
         </View>
-
-        <View nativeID="clerk-captcha" />
       </View>
     </ScrollView>
   );

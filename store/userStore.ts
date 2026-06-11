@@ -6,6 +6,6 @@ interface UserStore {
 }
 
 export const useUserStore = create<UserStore>((set) => ({
-  isAdmin: false,
+  isAdmin: true,
   setIsAdmin: (value) => set({ isAdmin: value }),
 }));

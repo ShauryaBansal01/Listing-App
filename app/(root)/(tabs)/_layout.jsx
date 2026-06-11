@@ -1,25 +1,15 @@
+import { useUserStore } from "@/store/userStore";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
-function TabIcon({ name, color, size }) {
-  return <Ionicons name={name} size={size} color={color} />;
-}
+export default function TabsLayout() {
+  const isAdmin = useUserStore((state) => state.isAdmin);
 
-export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: "#1f2937", // dark background matching screenshot
-          borderTopWidth: 0,
-        },
-        tabBarActiveTintColor: "#ffffff",
-        tabBarInactiveTintColor: "#9ca3af",
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "500",
-        },
+        tabBarActiveTintColor: "#000",
       }}
     >
       <Tabs.Screen
@@ -27,34 +17,48 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
-            <TabIcon name="home" color={color} size={size} />
+            <Ionicons name="home" color={color} size={size} />
           ),
         }}
       />
+
       <Tabs.Screen
         name="search"
         options={{
           title: "Search",
           tabBarIcon: ({ color, size }) => (
-            <TabIcon name="search" color={color} size={size} />
+            <Ionicons name="search" color={color} size={size} />
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="create"
+        options={{
+          title: "Add Property",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle" color={color} size={size} />
+          ),
+          href: isAdmin ? "/create" : null,
+        }}
+      />
+
       <Tabs.Screen
         name="saved"
         options={{
           title: "Saved",
           tabBarIcon: ({ color, size }) => (
-            <TabIcon name="heart" color={color} size={size} />
+            <Ionicons name="heart" color={color} size={size} />
           ),
         }}
       />
+
       <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <TabIcon name="person" color={color} size={size} />
+            <Ionicons name="person" color={color} size={size} />
           ),
         }}
       />

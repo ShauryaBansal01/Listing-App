@@ -1,50 +1,66 @@
-# Welcome to your Expo app 👋
+# Kribb - Real Estate Listings App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Welcome to **Kribb**, a modern, cross-platform mobile application for browsing and managing real estate listings. Built with the latest React Native ecosystem tools, it offers a seamless native experience on both iOS and Android.
 
-## Get started
+## 🚀 Tech Stack
 
-1. Install dependencies
+- **Framework**: [React Native](https://reactnative.dev/) (v0.81) & [Expo](https://expo.dev/) (SDK 54)
+- **Routing**: [Expo Router](https://docs.expo.dev/router/introduction/) (v6) for file-based native routing and deep linking.
+- **Styling**: [NativeWind](https://www.nativewind.dev/) (v4) utilizing TailwindCSS for highly customizable, utility-first styling.
+- **Authentication**: [Clerk](https://clerk.com/) for secure, scalable user identity and session management.
+- **Backend & Database**: [Supabase](https://supabase.com/) for PostgreSQL database, secure edge functions, and real-time data sync.
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand) for lightweight, fast, and scalable global state.
 
+## 🌟 Key Features
+
+* **Cross-Platform Tab Navigation**: Utilizing `@react-navigation/bottom-tabs` wrapped by Expo Router for a fluid, native feel.
+* **Role-Based Access Control**: Admins have exclusive access to a "Create Property" form directly from the tab bar, synced dynamically via Supabase.
+* **Real-time Sync**: User profiles and admin statuses are securely synchronized between Clerk Authentication and the Supabase PostgreSQL database on login.
+* **Modern UI/UX**: Designed with sleek, modern UI patterns powered by NativeWind and beautiful iconography from Ionicons.
+* **Property Management**: Users can search, filter, view, and save real estate properties.
+
+## 🛠️ Getting Started
+
+### Prerequisites
+Make sure you have Node.js and npm installed. You will also need an emulator (Android Studio / Xcode) or a physical device with the Expo Go app.
+
+### Installation
+
+1. **Clone the repository** (if you haven't already):
+   ```bash
+   git clone https://github.com/ShauryaBansal01/Listing-App.git
+   cd Listing-App
+   ```
+
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-2. Start the app
+3. **Set up Environment Variables**:
+   Create a `.env` file in the root of your project and add your API keys:
+   ```env
+   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+   CLERK_SECRET_KEY=your_clerk_secret_key
+   EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+   EXPO_PUBLIC_SUPABASE_KEY=your_supabase_anon_key
+   ```
 
+4. **Run the Application**:
+   Start the Expo Metro Bundler:
    ```bash
    npx expo start
    ```
+   Press `a` to open in Android, `i` to open in iOS, or scan the QR code with your mobile device.
 
-In the output, you'll find options to open the app in a
+## 📁 Project Structure
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+* `/app`: Contains all file-based routing components (`(root)/(tabs)`).
+* `/components`: Reusable UI components like `PropertyCard`, `FilterModal`, and `FeaturedCard`.
+* `/hooks`: Custom React hooks (e.g., `useSupabase`, `useUserSync`, `useSavedProperty`).
+* `/lib`: Core configuration files and utility functions.
+* `/store`: Zustand global state slices (`userStore`, `filterStore`).
+* `/types`: TypeScript type definitions and interfaces.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🛡️ Security & Roles
+The application automatically syncs authenticated Clerk users with a `users` table in Supabase. The "Add Property" feature uses this synced data to verify if the `is_admin` flag is `true`. Standard users cannot access or see the creation routes.
